@@ -90,7 +90,7 @@ set number
 " This is useful because you can tell, at a glance, what count is needed to
 " jump up or down to a particular line, by {count}k to go up or {count}j to go
 " down.
-" set relativenumber
+set relativenumber
 
 " Always show the status line at the bottom, even if you only have one window open.
 set laststatus=2
@@ -144,25 +144,59 @@ inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
 " ###### Additional Settings #########
-"
-" Powerline status bar
-" https://github.com/powerline/powerline
-" python3 from powerline.vim import setup as powerline_setup
-" python3 powerline_setup()
-" python3 del powerline_setup
+
+" Install vim-plug if not found
+" NOTE: since this is failing silentily you need git and curl installed
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+
+" TODO: check why is it not running on startup on a barebone linux instalation
+" Run PlugInstall if there are missing plugins
+autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
+  \| PlugInstall --sync | source $MYVIMRC
+\| endif
+
+" Specify a directory for plugins
+" - For Neovim: stdpath('data') . '/plugged'
+" - Avoid using standard Vim directory names like 'plugin'
+call plug#begin('~/.vim/plugged')
+" Project file tree with on-demand loading
+Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+" Undo history tree branching
+Plug 'mbbill/undotree', { 'on':  'NERDTreeToggle' }
+" Airline status bar
+Plug 'vim-airline/vim-airline'
+" Airline status bar themes
+Plug 'vim-airline/vim-airline-themes'
+" To comment code easly
+Plug 'tpope/vim-commentary'
+" Git integration
+Plug 'tpope/vim-fugitive'
+Plug 'rbong/vim-flog'
+" Rust lang support
+Plug 'rust-lang/rust.vim'
+" Gruvbox color scheme
+Plug 'morhetz/gruvbox'
+" Install FZF fuzzy search binary and vim plugin
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'tpope/vim-surround'
+Plug 'machakann/vim-highlightedyank'
+call plug#end()
 
 " Airline status bar
 let g:airline_powerline_fonts = 1
 set t_Co=256
 
-" Where to store backup files
-set backupdir=~/.vim/.backup//
-
-" Where to store undo files
-set undodir=~/.vim/.undo//
-
-" Where to store swap files
-set directory=~/.vim/.swp//
+" Set it a bakcup dir, undo dir, and swap directory.
+" The double slash at the end ensures that there is no conflict in case of two
+" files having the same name. The `,.` allow vim to use the current directory
+" if the former doesn't exist.
+set backupdir=~/.vim/.backup//,.
+set undodir=~/.vim/.undo//,.
+set directory=~/.vim/.swp//,.
 
 inoremap <C-c> <Esc>
 
@@ -180,6 +214,8 @@ set foldlevel=99
 nnoremap <space> za
 
 set nowrap
+set list
+set listchars=tab:>-,trail:.
 
 " Tab settings
 set tabstop=4 softtabstop=4
@@ -208,7 +244,7 @@ inoremap { {}<left>
 inoremap {<CR> {<CR>}<ESC>O
 
 :let mapleader = " "
-" Clear search
+" Clear search highlight
 noremap <silent><leader>/ :nohls<CR>
 " Create newlines without entering insert mode
 nmap <CR> o<Esc>k
